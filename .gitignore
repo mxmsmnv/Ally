@@ -29,6 +29,12 @@ nbproject/
 # Composer
 vendor/
 composer.lock
+# ...but the bundled Sienna widget and self-hosted font ARE part of the module
+# and must be committed (the module ships with no build step).
+!vendor/
+!vendor/sienna-accessibility.umd.js
+!vendor/fonts/
+!vendor/fonts/**
 
 # Node
 node_modules/

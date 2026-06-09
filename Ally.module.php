@@ -13,7 +13,8 @@
  *   data-asw-position  — bottom-left | bottom-right | top-left | top-right | center-left | center-right | bottom-center | top-center
  *   data-asw-offset    — "x,y" pixels
  *   data-asw-size      — button size in px (default 58)
- *   Accent color       — injected via inline <style> override (no Sienna API for this)
+ *   data-asw-color     — accent color for the widget button (applied by the bundle)
+ *   data-asw-font-url  — base URL for the self-hosted OpenDyslexic font files
  *
  * @copyright 2025
  * @license MIT
@@ -40,7 +41,7 @@ class Ally extends WireData implements Module, ConfigurableModule {
 			'am' => 'አማርኛ (Amharic)', 'ar' => 'العربية (Arabic)',
 			'bg' => 'български (Bulgarian)', 'bn' => 'বাংলা (Bengali)',
 			'ca' => 'Català (Catalan)', 'cs' => 'čeština (Czech)',
-			'da' => 'Danish (Denmark)', 'de' => 'Deutsch (German)',
+			'da' => 'Dansk (Danish)', 'de' => 'Deutsch (German)',
 			'el' => 'Ελληνικά (Greek)', 'en' => 'English',
 			'es' => 'Español (Spanish)', 'fa' => 'فارسی (Persian)',
 			'fi' => 'suomi (Finnish)', 'fil' => 'Tagalog (Filipino)',
@@ -114,7 +115,10 @@ class Ally extends WireData implements Module, ConfigurableModule {
 			}
 		}
 
-		$event->return = str_replace('</body>', $this->buildScriptTag($lang) . '</body>', $html);
+		// Inject before the LAST </body> only (avoids duplicate injection if markup
+		// contains escaped/example </body> tokens earlier in the document).
+		$pos = strripos($html, '</body>');
+		$event->return = substr_replace($html, $this->buildScriptTag($lang), $pos, 0);
 	}
 
 	protected function resolveLanguage(): string {
@@ -136,16 +140,21 @@ class Ally extends WireData implements Module, ConfigurableModule {
 	}
 
 	protected function buildScriptTag(string $lang): string {
-		$url    = $this->wire('config')->urls->siteModules . 'Ally/vendor/sienna-accessibility.umd.js';
-		$pos    = $this->position ?: 'bottom-left';
-		$ox     = (int)($this->offset_x ?: 20);
-		$oy     = (int)($this->offset_y ?: 20);
-		$size   = (int)($this->size ?: 58);
+		$base    = $this->wire('config')->urls->siteModules . 'Ally/vendor/';
+		// Cache-bust against the bundle's mtime so updates aren't served stale.
+		$ver     = @filemtime($this->vendorScriptPath()) ?: self::SIENNA_VERSION;
+		$url     = $base . 'sienna-accessibility.umd.js?v=' . $ver;
+		$fontUrl = $base . 'fonts/';
+		$pos     = $this->position ?: 'bottom-left';
+		$ox      = (int)($this->offset_x ?: 20);
+		$oy      = (int)($this->offset_y ?: 20);
+		$size    = (int)($this->size ?: 58);
 
 		$attrs  = 'src="' . htmlspecialchars($url, ENT_QUOTES) . '"'
 			. ' data-asw-position="' . htmlspecialchars($pos, ENT_QUOTES) . '"'
 			. ' data-asw-offset="' . $ox . ',' . $oy . '"'
-			. ' data-asw-size="' . $size . '"';
+			. ' data-asw-size="' . $size . '"'
+			. ' data-asw-font-url="' . htmlspecialchars($fontUrl, ENT_QUOTES) . '"';
 
 		if($lang !== 'auto') {
 			$attrs .= ' data-asw-lang="' . htmlspecialchars($lang, ENT_QUOTES) . '"';
