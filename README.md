@@ -2,6 +2,8 @@
 
 Ally adds a self-hosted accessibility widget to your ProcessWire site. Powered by [Sienna](https://github.com/bennyluk/Sienna-Accessibility-Widget) (MIT), the JS bundle ships with the module and is served from your own server — no external CDN, no third-party requests at runtime. The OpenDyslexic font used by the dyslexia-friendly mode is also bundled locally (`vendor/fonts/`), so even that feature makes no off-site requests.
 
+If this project helps your work, consider supporting future development: [GitHub Sponsors](https://github.com/sponsors/mxmsmnv) or [smnv.org/sponsor](https://smnv.org/sponsor/).  
+
 ## Features
 
 - Font size adjustment
